@@ -22,6 +22,11 @@
   <include file="$(find compal_gazebo)/launch/include/$(arg robot).launch.xml"/>
   <!-- ros_control htcbot launch file -->
   <remap to="$(arg robot)/cmd_vel" from="cmd_vel" />
+  <node pkg="tf" type="static_transform_publisher" name="tf_map_broadcaster" args="0 0 0 0 0 0 map /agv2/odom 50"/>
+<!--
+    may not be the reall pose, it is just an estimation
+-->
+  <node pkg="tf" type="static_transform_publisher" name="tf_laser_broadcaster" args="0 -0.50 0.135 -1.57 0 0 /agv2/base_link laser_link 50"/>
 <!--
   <include file="$(find agv2_control)/launch/$(arg robot)/$(arg robot)_control_sim.launch" />
 -->
