@@ -1,0 +1,13 @@
+<launch>
+  <arg name="pos_x" default="0.0"/>
+  <arg name="pos_y" default="0.0"/>
+  <arg name="model" default=""/>
+
+  <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+	args="-urdf -param /robot_description
+              -x $(arg pos_x)
+              -y $(arg pos_y)
+              -model $(arg model) -namespace $(arg model)"/>
+
+</launch>
