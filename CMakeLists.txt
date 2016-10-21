@@ -35,19 +35,19 @@ catkin_package(
   DEPENDS
     gazebo
   LIBRARIES
-    #~ _gazebo_plugin
+    compal_gazebo_plugin
 )
 
-#~ add_library(_gazebo_plugin src/plugin.cpp)
-#~ target_link_libraries(_gazebo_plugin
-  #~ ${catkin_LIBRARIES}
-  #~ ${GAZEBO_LIBRARIES}
-#~ )
+add_library(compal_gazebo_plugin src/plugin.cpp)
+target_link_libraries(compal_gazebo_plugin
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
 
-#~ install(
-  #~ TARGETS _gazebo_plugin
-  #~ LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#~ )
+install(
+  TARGETS compal_gazebo_plugin
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
 
 install(DIRECTORY launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
