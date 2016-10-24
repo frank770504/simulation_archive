@@ -16,8 +16,10 @@ const std::string SetModelPoseServiceName = "SetModelPoseService";
 class ServiceManager {
 public:
   ServiceManager() : is_called_(false) {}
-  virtual void CallBack() = 0;
+  virtual void ServiceManagerCallBack() = 0;
   void SetCalledFlag() { is_called_ = true; }
+  void ClearCalledFlag() { is_called_ = false; }
+  bool IsCalledFlag() { return is_called_; };
 private:
   bool is_called_;
 };
@@ -33,8 +35,11 @@ public:
   // virtual ~ServicePackage();
   bool Init(ros::NodeHandle* nh);
   bool ServerCallback(SvrReq &req, SvrRes &res);
-  void CallBack();
+  virtual void ServiceManagerCallBack();
   std::string GetServiceName() { return ServiceName_; };
+protected:
+  SvrReq req_;
+  SvrRes res_;
 private:
   std::string ServiceName_;
   boost::shared_ptr<ros::NodeHandle> rosnode_;
@@ -49,18 +54,43 @@ bool ServicePackage<SvrReq, SvrRes>::Init(ros::NodeHandle* nh) {
 }
 template <typename SvrReq, typename SvrRes>
 bool ServicePackage<SvrReq, SvrRes>::ServerCallback(SvrReq &req, SvrRes &res) {
-  ROS_INFO_STREAM("x: " << req.x << ", " << "y: " << req.y << ", " << "x: " << req.z);
+  req_ = req;
+  res_ = res;
+  SetCalledFlag();
   res.result = "data passed";
   return true;
 }
 template <typename SvrReq, typename SvrRes>
-void ServicePackage<SvrReq, SvrRes>::CallBack() { return; }
+void ServicePackage<SvrReq, SvrRes>::ServiceManagerCallBack() {
+  if ( IsCalledFlag() )
+    ClearCalledFlag();
+}
+
+// ========================================================================== //
+
+typedef compal_gazebo::SetModelPoseService::Request SetModelPoseServiceRequest;
+typedef compal_gazebo::SetModelPoseService::Response SetModelPoseServiceResponse;
+
+class SetModelPoseService
+  : public ServicePackage<SetModelPoseServiceRequest,
+                          SetModelPoseServiceResponse>{
+public:
+  SetModelPoseService(std::string service_name)
+    : ServicePackage(service_name) {}
+  void ServiceManagerCallBack() {
+    if ( IsCalledFlag() ) {
+      ROS_INFO_STREAM("x: " << req_.x << ", " << "y: " << req_.y << ", " << "x: " << req_.z);
+      ClearCalledFlag();
+    }
+  };
+};
+
 
 // ========================================================================== //
 
 class AGV2GazeboPlugin : public ModelPlugin {
-  typedef std::vector<ServiceManager> ServiceManagerVec;
-  typedef std::vector<ServiceManager>::iterator ServiceManagerVecIter;
+  typedef std::vector<ServiceManager*> ServiceManagerVecPtr;
+  typedef ServiceManagerVecPtr::iterator ServiceManagerVecIter;
 public:
   AGV2GazeboPlugin() : set_model_pose_service_(SetModelPoseServiceName) {}
   ~AGV2GazeboPlugin() {}
@@ -70,7 +100,7 @@ public:
 private:
   void OnUpdate(const common::UpdateInfo& info);
 
-  ServicePackage<compal_gazebo::SetModelPoseService::Request, compal_gazebo::SetModelPoseService::Response> set_model_pose_service_;
+  SetModelPoseService set_model_pose_service_;
 
   physics::Link_V links_;
   physics::ModelPtr model_;
@@ -82,7 +112,7 @@ private:
   ros::Time last_update_time_;
   ros::NodeHandle nh_;
   ros::Time last_publish_;
-  ServiceManagerVec service_list_;
+  ServiceManagerVecPtr service_list_;
 };
 
 void AGV2GazeboPlugin::Load(physics::ModelPtr parent, sdf::ElementPtr sdf) {
@@ -100,6 +130,7 @@ void AGV2GazeboPlugin::Load(physics::ModelPtr parent, sdf::ElementPtr sdf) {
   }
   rosnode_.reset(new ros::NodeHandle(robot_namespace_));
   set_model_pose_service_.Init(rosnode_.get());
+  service_list_.push_back( dynamic_cast<ServiceManager*>(&set_model_pose_service_) );
 }
 
 void AGV2GazeboPlugin::Init() {
@@ -115,6 +146,10 @@ void AGV2GazeboPlugin::OnUpdate(const common::UpdateInfo& info) {
     ROS_INFO_STREAM("|OnUpdate| ros not ok");
   } else {
     //do things here
+    for (ServiceManagerVecIter it = service_list_.begin(); it != service_list_.end(); ++it) {
+      (*it)->ServiceManagerCallBack();
+    }
+
   }
 }
 
