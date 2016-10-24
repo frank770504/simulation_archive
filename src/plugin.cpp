@@ -79,10 +79,16 @@ public:
     : ServicePackage(service_name) {}
   void ServiceManagerCallBack() {
     if ( IsCalledFlag() ) {
-      ROS_INFO_STREAM("x: " << req_.x << ", " << "y: " << req_.y << ", " << "x: " << req_.z);
       ClearCalledFlag();
+      ROS_INFO_STREAM("x: " << req_.x << ", " << "y: " << req_.y << ", " << "x: " << req_.z);
+      model_->SetLinkWorldPose( math::Pose(req_.x, req_.y, req_.z, 0., 0., 0.), "base_footprint" );
     }
   };
+  void SetModelPtr(physics::ModelPtr model) {
+    model_ = model;
+  }
+private:
+  physics::ModelPtr model_;
 };
 
 
@@ -130,6 +136,7 @@ void AGV2GazeboPlugin::Load(physics::ModelPtr parent, sdf::ElementPtr sdf) {
   }
   rosnode_.reset(new ros::NodeHandle(robot_namespace_));
   set_model_pose_service_.Init(rosnode_.get());
+  set_model_pose_service_.SetModelPtr(model_);
   service_list_.push_back( dynamic_cast<ServiceManager*>(&set_model_pose_service_) );
 }
 
@@ -141,7 +148,6 @@ void AGV2GazeboPlugin::Init() {
 }
 
 void AGV2GazeboPlugin::OnUpdate(const common::UpdateInfo& info) {
-  math::Vector3 Acc;
   if (!ros::ok()) {
     ROS_INFO_STREAM("|OnUpdate| ros not ok");
   } else {
