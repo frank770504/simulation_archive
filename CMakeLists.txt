@@ -24,6 +24,7 @@ link_directories(
 add_service_files(
   FILES
   SetModelPoseService.srv
+  PushRodService.srv
 )
 
 generate_messages(

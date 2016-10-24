@@ -6,10 +6,12 @@
 #include <gazebo/gazebo.hh>
 #include <urdf/model.h>
 #include <compal_gazebo/SetModelPoseService.h>
+#include <compal_gazebo/PushRodService.h>
 
 namespace gazebo {
 
 const std::string SetModelPoseServiceName = "SetModelPoseService";
+const std::string PushRodServiceName = "PushRodService";
 
 // ========================================================================== //
 
@@ -91,6 +93,37 @@ private:
   physics::ModelPtr model_;
 };
 
+// ========================================================================== //
+
+typedef compal_gazebo::PushRodService::Request PushRodServiceRequest;
+typedef compal_gazebo::PushRodService::Response PushRodServiceResponse;
+
+class PushRodService
+  : public ServicePackage<PushRodServiceRequest,
+                          PushRodServiceResponse>{
+public:
+  PushRodService(std::string service_name)
+    : ServicePackage(service_name) {}
+  void ServiceManagerCallBack() {
+    if ( IsCalledFlag() ) {
+      physics::LinkPtr link_rod = model_->GetLink("rod_link");
+      ROS_INFO_STREAM("the rod link name is: " << link_rod->GetName());
+      ClearCalledFlag();
+      if (req_.is_pushing) {
+        link_rod->AddForce(math::Vector3(0.0, 0.0, req_.force));
+        ROS_INFO_STREAM("flag: " << true << ", force: " << req_.force);
+      } else {
+        link_rod->AddForce(math::Vector3(0.0, 0.0, req_.force*-1));
+        ROS_INFO_STREAM("flag: " << false << ", force: " << req_.force);
+      }
+    }
+  }
+  void SetModelPtr(physics::ModelPtr model) {
+    model_ = model;
+  }
+private:
+  physics::ModelPtr model_;
+};
 
 // ========================================================================== //
 
@@ -98,7 +131,9 @@ class AGV2GazeboPlugin : public ModelPlugin {
   typedef std::vector<ServiceManager*> ServiceManagerVecPtr;
   typedef ServiceManagerVecPtr::iterator ServiceManagerVecIter;
 public:
-  AGV2GazeboPlugin() : set_model_pose_service_(SetModelPoseServiceName) {}
+  AGV2GazeboPlugin()
+    : set_model_pose_service_(SetModelPoseServiceName),
+      push_ros_test_service_(PushRodServiceName) {}
   ~AGV2GazeboPlugin() {}
   virtual void Load(physics::ModelPtr parent, sdf::ElementPtr sdf);
   virtual void Init();
@@ -107,6 +142,7 @@ private:
   void OnUpdate(const common::UpdateInfo& info);
 
   SetModelPoseService set_model_pose_service_;
+  PushRodService push_ros_test_service_;
 
   physics::Link_V links_;
   physics::ModelPtr model_;
@@ -136,8 +172,11 @@ void AGV2GazeboPlugin::Load(physics::ModelPtr parent, sdf::ElementPtr sdf) {
   }
   rosnode_.reset(new ros::NodeHandle(robot_namespace_));
   set_model_pose_service_.Init(rosnode_.get());
+  push_ros_test_service_.Init(rosnode_.get());
   set_model_pose_service_.SetModelPtr(model_);
+  push_ros_test_service_.SetModelPtr(model_);
   service_list_.push_back( dynamic_cast<ServiceManager*>(&set_model_pose_service_) );
+  service_list_.push_back( dynamic_cast<ServiceManager*>(&push_ros_test_service_) );
 }
 
 void AGV2GazeboPlugin::Init() {
@@ -145,6 +184,9 @@ void AGV2GazeboPlugin::Init() {
   prevUpdateTime = model_->GetWorld()->GetSimTime();
   last_publish_ = ros::Time(prevUpdateTime.Double());
   links_ = model_->GetLinks();
+  for(physics::Link_V::iterator it = links_.begin(); it != links_.end(); ++it) {
+    ROS_INFO_STREAM( "Link Name: " << (*it)->GetName());
+  }
 }
 
 void AGV2GazeboPlugin::OnUpdate(const common::UpdateInfo& info) {
