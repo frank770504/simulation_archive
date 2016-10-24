@@ -21,9 +21,10 @@ link_directories(
   ${GAZEBO_LIBRARY_DIRS}
 )
 
-#~ add_service_files(
-  #~ FILES
-#~ )
+add_service_files(
+  FILES
+  SetModelPoseService.srv
+)
 
 generate_messages(
 )
@@ -37,6 +38,8 @@ catkin_package(
   LIBRARIES
     compal_gazebo_plugin
 )
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 add_library(compal_gazebo_plugin src/plugin.cpp)
 target_link_libraries(compal_gazebo_plugin
