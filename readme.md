@@ -10,3 +10,12 @@ To solve this kind of error, we can just do the simple "ln -s" command like..
 ln -s /usr/include/gazebo-2.2/gazebo/ /usr/include/gazebo/
 ln -s /usr/include/sdformat-1.4/sdf/ /usr/include/sdf
 ```
+
+### compal_gazebo_multi.launch
+
+This launch file needs all agv_control and agv_description pkg.
+
+If it runs sucessfully, we can do: 
+
+1. move agv2 by arrow key
+2. push the lifter by using the oringinal topic /robot/lifter_motor
