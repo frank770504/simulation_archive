@@ -3,6 +3,9 @@
   <arg name="robot" default="agv2"/>
   <arg name="robot2" default="shelf"/>
 
+  <remap to="/cmd_vel" from="/$(arg robot)/cmd_vel"/>
+  <remap to="/scan" from="/$(arg robot)/scan"/>
+
   <!-- run_rviz = {true, false} -->
   <arg name="run_rviz" default="false"/>
 
@@ -13,12 +16,14 @@
   <arg name="headless" default="false"/>
   <arg name="debug" default="false"/>
 
+  <arg name="is_amcl" default="false"/>
+  <arg name="odom_frame" default="odom_combined"/>
+  <arg name="base_link_frame" default="base_link"/>
+  <arg name="laser_frame" default="laser"/>
+
   <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-<!--
-    <arg name="world_name" value="$(find compal_gazebo)/worlds/compal.world"/>
--->
-    <arg name="world_name" value="$(find compal_gazebo)/worlds/test.world"/>
+    <arg name="world_name" value="$(find compal_gazebo)/worlds/compal_7f.world"/>
     <arg name="debug" value="$(arg debug)" />
     <arg name="gui" value="$(arg gui)" />
     <arg name="paused" value="$(arg paused)"/>
@@ -35,34 +40,37 @@
 	 command="$(find xacro)/xacro.py '$(find agv2_description)/urdf/shelf.urdf.xacro'" />
 
   <group ns="$(arg robot)">
-    <param name="tf_prefix" value="$(arg robot)_tf" />
+    <param name="tf_prefix" value="$(arg robot)" />
     <include file="$(find compal_gazebo)/launch/include/$(arg robot)_multi.launch.xml">
       <arg name="pos_x" value="0"/>
       <arg name="pos_y" value="2"/>
       <arg name="model" value="$(arg robot)"/>
+      <arg name="description" default="/robot_description"/>
     </include>
   </group>
 
   <group ns="$(arg robot2)">
-    <param name="tf_prefix" value="$(arg robot2)_tf" />
+    <param name="tf_prefix" value="$(arg robot2)" />
     <include file="$(find compal_gazebo)/launch/include/$(arg robot2)_multi.launch.xml">
       <arg name="pos_x" value="0"/>
       <arg name="pos_y" value="0"/>
       <arg name="model" value="$(arg robot2)"/>
+      <arg name="description" default="/shelf_description"/>
     </include>
   </group>
 
-  <include file="$(find agv2_control)/launch/$(arg robot)_control.launch" />
+  <node pkg="tf" type="static_transform_publisher" name="tf_map_broadcaster" args="0 0 0 0 0 0 map /$(arg robot)/odom 50" unless="$(arg is_amcl)"/>
+  <node pkg="tf" type="static_transform_publisher" name="tf_map_broadcaster" args="0 0 0 0 0 0 $(arg odom_frame) /$(arg robot)/odom 50" if="$(arg is_amcl)"/>
+  <node pkg="tf" type="static_transform_publisher" name="tf_odoms_broadcaster" args="0 0 0 -1.57 0 0 $(arg robot)/base_link $(arg base_link_frame)  50"/>
+  <node pkg="tf" type="static_transform_publisher" name="tf_laser_location_broadcaster" args="0 -0.50 0.135 -1.57 0 0 $(arg robot)/base_link /$(arg robot)/laser_link 50"/>
+  <node pkg="tf" type="static_transform_publisher" name="tf_laser_broadcaster" args="0 0 0 0 0 0 /$(arg robot)/laser_link $(arg laser_frame)  50"/>
 
-  <node pkg="tf" type="static_transform_publisher" name="tf_map_broadcaster" args="0 0 0 0 0 0 map /agv2_tf/odom 50" if="$(arg run_rviz)"/>
-  <!-- laser may not be put in the reall pose, it is just an estimation -->
-  <node pkg="tf" type="static_transform_publisher" name="tf_laser_broadcaster" args="0 -0.50 0.135 -1.57 0 0 /agv2_tf/base_link /agv2_tf/laser_link 50" if="$(arg run_rviz)"/>
+  <include file="$(find agv2_control)/launch/$(arg robot)_control.launch">
+    <arg name="base_link_frame" value="$(arg robot)/base_link"/>
+  </include>
+
     <!-- RVIZ -->
   <node pkg="rviz" type="rviz" name="rviz" output="screen" args="-d $(find compal_gazebo)/launch/laser_show.rviz" if="$(arg run_rviz)"/>
-  <node pkg="turtlesim" type="turtle_teleop_key" name="turtle_teleop_key" output="screen" >
-<!--
-    <remap to="$(arg robot)/cmd_vel" from="cmd_vel" />
--->
-  </node>
+  <node pkg="turtlesim" type="turtle_teleop_key" name="turtle_teleop_key" output="screen" />
 
 </launch>
