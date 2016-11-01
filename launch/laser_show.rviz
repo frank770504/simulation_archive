@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /LaserScan1
       Splitter Ratio: 0.5
     Tree Height: 553
   - Class: rviz/Selection
@@ -65,7 +66,7 @@ Visualization Manager:
       Max Color: 255; 255; 255
       Max Intensity: 0
       Min Color: 0; 0; 0
-      Min Intensity: -1.08422e-19
+      Min Intensity: 0
       Name: LaserScan
       Position Transformer: XYZ
       Queue Size: 10
@@ -73,7 +74,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.01
       Style: Flat Squares
-      Topic: /agv2/laser/scan
+      Topic: /scan
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -101,7 +102,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 10
+      Distance: 14.216
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
@@ -113,10 +114,10 @@ Visualization Manager:
         Z: 0
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.785398
+      Pitch: 1.0254
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.785398
+      Yaw: 0.755398
     Saved: ~
 Window Geometry:
   Displays:
