@@ -9,6 +9,7 @@
 	args="-urdf -param $(arg description)
               -x $(arg pos_x)
               -y $(arg pos_y)
+              -Y 1.57
               -model $(arg model) -namespace $(arg model)"/>
 
 </launch>
