@@ -37,16 +37,16 @@
 
   <param name="tf_prefix" value="$(arg robot)" />
   <include file="$(find compal_gazebo)/launch/include/$(arg robot)_multi.launch.xml">
-    <arg name="pos_x" value="0"/>
-    <arg name="pos_y" value="2"/>
+    <arg name="pos_x" value="-2"/>
+    <arg name="pos_y" value="0"/>
     <arg name="model" value="$(arg robot)"/>
     <arg name="description" default="robot_description"/>
   </include>
 
-  <node pkg="tf" type="static_transform_publisher" name="tf_map_broadcaster" args="0 0 0 0 0 0 map /$(arg robot)/odom 50" unless="$(arg is_amcl)"/>
+  <node pkg="tf" type="static_transform_publisher" name="tf_map_broadcaster" args="2 0.298 0 0 0 0 map /$(arg robot)/odom 50" unless="$(arg is_amcl)"/>
   <node pkg="tf" type="static_transform_publisher" name="tf_map_broadcaster" args="0 0 0 0 0 0 $(arg odom_frame) /$(arg robot)/odom 50" if="$(arg is_amcl)"/>
-  <node pkg="tf" type="static_transform_publisher" name="tf_odoms_broadcaster" args="0 0 0 -1.57 0 0 $(arg robot)/base_link $(arg base_link_frame)  50"/>
-  <node pkg="tf" type="static_transform_publisher" name="tf_laser_location_broadcaster" args="0 -0.50 0.135 -1.57 0 0 $(arg robot)/base_link /$(arg robot)/laser_link 50"/>
+  <node pkg="tf" type="static_transform_publisher" name="tf_odoms_broadcaster" args="0 0 0 0 0 0 $(arg robot)/base_link $(arg base_link_frame)  50"/>
+  <node pkg="tf" type="static_transform_publisher" name="tf_laser_location_broadcaster" args="0.50 0 0.135 0 0 0 $(arg robot)/base_link /$(arg robot)/laser_link 50"/>
   <node pkg="tf" type="static_transform_publisher" name="tf_laser_broadcaster" args="0 0 0 0 0 0 /$(arg robot)/laser_link $(arg laser_frame)  50"/>
 
   <include file="$(find agv2_control)/launch/$(arg robot)_control.launch">
