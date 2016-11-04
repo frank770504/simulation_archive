@@ -6,6 +6,7 @@
   <remap to="/cmd_vel" from="/$(arg robot)/cmd_vel"/>
   <remap to="/scan" from="/$(arg robot)/scan"/>
   <remap to="/imu_data" from="/$(arg robot)/imu_data"/>
+  <remap to="/odom" from="/$(arg robot)/odom"/>
 
   <!-- run_rviz = {true, false} -->
   <arg name="run_rviz" default="false"/>
@@ -18,9 +19,11 @@
   <arg name="debug" default="false"/>
 
   <arg name="is_amcl" default="false"/>
+  <arg name="is_pose_ekf" default="false"/>
   <arg name="odom_frame" default="odom_combined"/>
   <arg name="base_link_frame" default="base_link"/>
   <arg name="laser_frame" default="laser"/>
+  <arg name="imu_frame" default="imu"/>
 
   <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -62,8 +65,10 @@
 
   <node pkg="tf" type="static_transform_publisher" name="tf_map_broadcaster" args="2 0.298 0 0 0 0 map /$(arg robot)/odom 50" unless="$(arg is_amcl)"/>
   <node pkg="tf" type="static_transform_publisher" name="tf_map_broadcaster" args="0 0 0 0 0 0 $(arg odom_frame) /$(arg robot)/odom 50" if="$(arg is_amcl)"/>
-  <node pkg="tf" type="static_transform_publisher" name="tf_odoms_broadcaster" args="0 0 0 0 0 0 $(arg robot)/base_link $(arg base_link_frame)  50"/>
-  <node pkg="tf" type="static_transform_publisher" name="tf_laser_location_broadcaster" args="0.50 0 0.135 0 0 0 $(arg robot)/base_link /$(arg robot)/laser_link 50"/>
+  <node pkg="tf" type="static_transform_publisher" name="tf_odoms_broadcaster" args="0 0 0 0 0 0 $(arg robot)/base_link $(arg base_link_frame)  50" unless="$(arg is_pose_ekf)"/>
+  <node pkg="tf" type="static_transform_publisher" name="tf_laser_location_broadcaster" args="0.50 0 0.135 0 0 0 $(arg base_link_frame) /$(arg robot)/laser_link 50"/>
+  <node pkg="tf" type="static_transform_publisher" name="tf_imu_out_broadcaster" args="0 0 0 0 0 0 $(arg base_link_frame) $(arg imu_frame) 50"/>
+  <node pkg="tf" type="static_transform_publisher" name="tf_imu_sim_broadcaster" args="0 0 0 0 0 0 $(arg imu_frame) gazebo_imu 50"/>
   <node pkg="tf" type="static_transform_publisher" name="tf_laser_broadcaster" args="0 0 0 0 0 0 /$(arg robot)/laser_link $(arg laser_frame)  50"/>
 
   <include file="$(find agv2_control)/launch/$(arg robot)_control.launch">
