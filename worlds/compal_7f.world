@@ -4,7 +4,7 @@
     <!-- Ground Plane -->
     <include>
       <uri>model://compal_7f_office_only</uri>
-      <pose>0 0 0 0 0 -1.57</pose>
+      <pose>0 0 0 0 0 0</pose>
     </include>
     <include>
         <uri>model://sun</uri>
