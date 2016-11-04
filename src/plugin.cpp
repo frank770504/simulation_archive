@@ -83,7 +83,8 @@ public:
     if ( IsCalledFlag() ) {
       ClearCalledFlag();
       ROS_INFO_STREAM("x: " << req_.x << ", " << "y: " << req_.y << ", " << "x: " << req_.z);
-      model_->SetLinkWorldPose( math::Pose(req_.x, req_.y, req_.z, 0., 0., 0.), "base_footprint" );
+      ROS_INFO_STREAM("roll: " << req_.r << ", " << "pitch: " << req_.p << ", " << "yaw: " << req_.yw);
+      model_->SetLinkWorldPose( math::Pose(req_.x, req_.y, req_.z, req_.r, req_.p, req_.yw), "base_footprint" );
     }
   };
   void SetModelPtr(physics::ModelPtr model) {
