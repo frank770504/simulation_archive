@@ -5,6 +5,7 @@
 
   <remap to="/cmd_vel" from="/$(arg robot)/cmd_vel"/>
   <remap to="/scan" from="/$(arg robot)/scan"/>
+  <remap to="/imu_data" from="/$(arg robot)/imu_data"/>
 
   <!-- run_rviz = {true, false} -->
   <arg name="run_rviz" default="false"/>
