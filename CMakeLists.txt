@@ -48,6 +48,7 @@ target_link_libraries(compal_gazebo_plugin
   ${GAZEBO_LIBRARIES}
 )
 
+add_dependencies(compal_gazebo_plugin ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 install(
   TARGETS compal_gazebo_plugin
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
